@@ -48,7 +48,7 @@ impl Editor {
         for current_row in 0 .. size.1 {
             print!("~");
 
-            if current_row + 1 < size.1 {
+            if current_row + 1 <= size.1 {
                 print!("\r\n");
             }
         }
