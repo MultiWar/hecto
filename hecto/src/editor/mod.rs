@@ -1,12 +1,8 @@
 use crossterm::event::{read, Event, Event::Key, KeyCode::Char, KeyEvent, KeyModifiers};
-use crossterm::queue;
-use crossterm::cursor::{Hide, Show};
-use crossterm::style::Print;
-use std::io::stdout;
-use std::io::Write;
+use std::io::Error;
 
 mod terminal;
-use terminal::{Size, Terminal};
+use terminal::{Position, Size, Terminal};
 
 pub struct Editor {
     should_quit: bool,
@@ -24,23 +20,19 @@ impl Editor {
         result.unwrap();
     }
 
-    fn refresh_screen(&self) -> Result<(), std::io::Error> {
-        let mut stdout = stdout();
-
-        queue!(stdout, Hide)?;
+    fn refresh_screen(&self) -> Result<(), Error> {
+        Terminal::hide_cursor()?;
 
         if self.should_quit {
             Terminal::clear_screen()?;
-            queue!(stdout, Show)?;
-            queue!(stdout, Print("Goodbye! \r\n"))?;
+            Terminal::print("Goodbye! \r\n")?;
         } else {
             Self::draw_rows()?;
-            queue!(stdout, Show)?;
-            Terminal::move_cursor_to(0, 0)?;
+            Terminal::move_cursor_to(Position{x: 0, y: 0})?;
         }
 
-        stdout.flush()?;
-        Ok(())
+        Terminal::show_cursor()?;
+        Terminal::execute()
     }
 
     fn evaluate_event(&mut self, event: &Event) {
@@ -54,26 +46,24 @@ impl Editor {
         }
     }
 
-    fn draw_rows() -> Result<(), std::io::Error> {
+    fn draw_rows() -> Result<(), Error> {
         let Size { height, ..} = Terminal::size()?;
-
-        let mut stdout = stdout();
 
         for current_row in 0 .. height {
             Terminal::clear_row()?;
-            queue!(stdout, Print("~"))?;
+            Terminal::print("~")?;
 
             if current_row + 1 < height {
-                queue!(stdout, Print("\r\n"))?;
+                Terminal::print("\r\n")?;
             }
 
-            stdout.flush()?;
+            Terminal::execute()?;
         }
 
         Ok(())
     }
 
-    fn repl(&mut self) -> Result<(), std::io::Error> {
+    fn repl(&mut self) -> Result<(), Error> {
         Self::draw_rows()?;
         
         loop {
