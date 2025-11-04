@@ -7,21 +7,20 @@ use std::io::{stdout, Error, Write};
 
 pub struct Terminal {}
 pub struct Size {
-    pub width: u16,
-    pub height: u16,
+    pub width: usize,
+    pub height: usize,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Default)]
 pub struct Position {
-    pub x: u16,
-    pub y: u16,
+    pub col: usize,
+    pub row: usize,
 }
 
 impl Terminal {
     pub fn initialize() -> Result<(), Error> {
         enable_raw_mode()?;
         Self::clear_screen()?;
-        Self::move_cursor_to(Position { x: 0, y: 0 })?;
         Self::execute()
     }
 
@@ -38,12 +37,19 @@ impl Terminal {
         Self::queue_command(Clear(ClearType::CurrentLine))
     }
 
-    pub fn move_cursor_to(position: Position) -> Result<(), Error> {
-        Self::queue_command(MoveTo(position.x, position.y))
+    pub fn move_caret_to(position: Position) -> Result<(), Error> {
+        #[allow(clippy::as_conversions, clippy::cast_possible_truncation)]
+        Self::queue_command(MoveTo(position.col as u16, position.row as u16))
     }
 
     pub fn size() -> Result<Size, Error> {
-        let (width, height) = size()?;
+        let (width_u16, height_u16) = size()?;
+
+        #[allow(clippy::as_conversions)]
+        let height = height_u16 as usize;
+
+        #[allow(clippy::as_conversions)]
+        let width = width_u16 as usize;
 
         Ok(Size { width, height })
     }
@@ -57,11 +63,11 @@ impl Terminal {
         Self::queue_command(Print(string))
     }
 
-    pub fn hide_cursor() -> Result<(), Error> {
+    pub fn hide_caret() -> Result<(), Error> {
         Self::queue_command(Hide)
     }
 
-    pub fn show_cursor() -> Result<(), Error> {
+    pub fn show_caret() -> Result<(), Error> {
         Self::queue_command(Show)
     }
 
