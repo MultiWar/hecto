@@ -5,19 +5,25 @@ use super::terminal::{Size, Terminal};
 const NAME: &str = env!("CARGO_PKG_NAME");
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
-pub struct View {}
+use super::buffer::Buffer;
+
+#[derive(Default)]
+pub struct View {
+    buffer: Buffer,
+}
 
 impl View {
-    pub fn render() -> Result<(), Error> {
+    pub fn render(&self) -> Result<(), Error> {
         let Size { height, .. } = Terminal::size()?;
 
         Terminal::clear_row()?;
-        Terminal::print("Hello, World!\r\n")?;
 
-        for current_row in 1..height {
+        for current_row in 0..height {
             Terminal::clear_row()?;
 
-            if current_row == height / 3 {
+            if let Some(line) = self.buffer.lines.get(current_row) {
+                Terminal::print(line)?;
+            } else if current_row == height / 3 {
                 Self::draw_welcome_message()?;
             } else {
                 Self::draw_empty_row()?;

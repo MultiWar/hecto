@@ -13,6 +13,8 @@ use view::View;
 mod terminal;
 use terminal::{Position, Size, Terminal};
 
+mod buffer;
+
 #[derive(Copy, Clone, Default)]
 pub struct Location {
     x: usize,
@@ -23,6 +25,7 @@ pub struct Location {
 pub struct Editor {
     should_quit: bool,
     location: Location,
+    view: View,
 }
 
 impl Editor {
@@ -41,7 +44,7 @@ impl Editor {
             Terminal::clear_screen()?;
             Terminal::print("Goodbye! \r\n")?;
         } else {
-            View::render()?;
+            View::render(&self.view)?;
             Terminal::move_caret_to(Position {
                 col: self.location.x,
                 row: self.location.y,
@@ -115,7 +118,7 @@ impl Editor {
     }
 
     fn repl(&mut self) -> Result<(), Error> {
-        View::render()?;
+        View::render(&self.view)?;
 
         loop {
             self.refresh_screen()?;
