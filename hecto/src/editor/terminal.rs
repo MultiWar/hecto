@@ -57,9 +57,8 @@ impl Terminal {
         stdout().flush()
     }
 
-    // print(string: impl Display) would also work
     pub fn print(string: &str) -> Result<(), Error> {
-        Self::queue_command(Print(String::from(string)))
+        Self::queue_command(Print(string))
     }
 
     pub fn hide_caret() -> Result<(), Error> {
