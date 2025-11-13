@@ -2,7 +2,6 @@ use crossterm::cursor::{Hide, MoveTo, Show};
 use crossterm::style::Print;
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode, size, Clear, ClearType};
 use crossterm::{queue, Command};
-use std::fmt::Display;
 use std::io::{stdout, Error, Write};
 
 pub struct Terminal {}
@@ -59,8 +58,8 @@ impl Terminal {
     }
 
     // print(string: impl Display) would also work
-    pub fn print<T: Display>(string: T) -> Result<(), Error> {
-        Self::queue_command(Print(string))
+    pub fn print(string: &str) -> Result<(), Error> {
+        Self::queue_command(Print(String::from(string)))
     }
 
     pub fn hide_caret() -> Result<(), Error> {
